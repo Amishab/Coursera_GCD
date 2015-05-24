@@ -19,9 +19,9 @@ plot(cars)
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 
-# Code Book: Getting and Cleaning Data Course Project 
+## Code Book: Getting and Cleaning Data Course Project 
 
-## The original data set
+### The original data set
 
 The original data set is downloaded from [UCI repository](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) and copied to ./UCI HAR Dataset/ folder
 
@@ -35,8 +35,26 @@ Note that the y data contains a ID associated with the activity performed for ea
 
 The Original data set also came with master data for Activities (activity_labels.txt) and Features (features.txt) . Each subject performed 6 activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) and 561 features were obtained by calculating variables from the time and frequency domain.
 
-## run_analysis.R 
+### run_analysis.R 
 
+The first step was reading data from all the files provided and attaching libraries needed for the code. Then renamed column names for all data loaded in R data frames.
+
+```{r}
+source("run_analysis.R"")
+head(features)
+head(activities)
+head(test_subj)
+
+```
+
+Added a column to subject data frames viz. Train_Subject_Seq and Test_Subject_Seq that assigns sequence number to trials for each participant. This is needed to recast the tables during merge. Transformation for the columns are as under: 
+```{r evaluate=F}
+train_subj_seq <- apply(table(train_subj), 1,function(x) seq(1,x,by=1))
+train_subj <- cbind(Train_Subject_Seq=as.vector(unlist(train_subj_seq)), train_subj)
+
+test_subj_seq <- apply(table(test_subj), 1,function(x) seq(1,x,by=1))
+test_subj <- cbind(Test_Subject_Seq=as.vector(unlist(test_subj_seq)),test_subj)
+```
 The first step of the preprocessing is to merge the training and test sets. Two sets combined, there are 10,299 instances where each instance contains 561 features (560 measurements and subject identifier). After the merge operation the resulting data, the table contains 562 columns (560 measurements, subject identifier and activity label).
 
 After the merge operation, mean and standard deviation features are extracted for further processing. Out of 560 measurement features, 33 mean and 33 standard deviations features are extracted, yielding a data frame with 68 features (additional two features are subject identifier and activity label).
