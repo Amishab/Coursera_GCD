@@ -1,46 +1,25 @@
 # attach libraries
-
 library(reshape2)
 
-
 # Read the features.txt file
-
 features <- read.table("./UCI HAR Dataset/features.txt", stringsAsFactors=F)
-
 names(features) <- c("Feature_ID","Feature_Name")
 
-head(features)
-
-
 # Read the activities_labels file
-
 activities <- read.table("./UCI HAR Dataset/activity_labels.txt", stringsAsFactors=F)
-
 names(activities) <- c("Activity_ID","Activity_Name")
 
-head(activities)
-
-
-# Read test data
-
-## Read test subject data
-
+##################
+# Read test data #
+##################
+# Read test subject data
 test_subj <- read.table("./UCI HAR Dataset/test/subject_test.txt")
 
+# Requirement 4: Appropriately labels the data set with descriptive variable names
 names(test_subj) <- "Subject_ID"
-
-head(test_subj)
-
-# Create an additional column Subject_Type to indicate that subject was
-# selected for generating the training data or the test data.
-
-#len <- nrow(test_subj)
-#test_subj_typ <- rep("Test", times = len)
-#test_subj <- cbind(Subject_Type=as.vector(test_subj_typ),test_subj)
 
 # Create an additional column Test_Subject_Seq that assigns sequence number to trials for
 # each participant. This is used to recast the tables during merge.
-
 test_subj_seq <- apply(table(test_subj), 1,function(x) seq(1,x,by=1))
 test_subj <- cbind(Test_Subject_Seq=as.vector(unlist(test_subj_seq)),test_subj)
 
@@ -49,7 +28,6 @@ xtest <- read.table("./UCI HAR Dataset/test/X_test.txt")
 
 # Requirement 4: Appropriately labels the data set with descriptive variable names
 names(xtest) <- features$Feature_Name
-head(xtest,1)
 
 # Read y_Test data
 ytest <- read.table("./UCI HAR Dataset/test/y_test.txt")
@@ -58,7 +36,9 @@ ytest <- read.table("./UCI HAR Dataset/test/y_test.txt")
 names(ytest) <- "Activity_ID"
 head(ytest)
 
-# Read train data
+###################
+# Read train data #
+###################
 
 # Read Train subject data
 train_subj <- read.table("./UCI HAR Dataset/train/subject_train.txt")
@@ -109,9 +89,6 @@ for (i in activities$Activity_ID){
   print(activities$Activity_Name[i])
 }
 
-head(test)
-head(train)
-
 # Requirement 4: Appropriately labels the data set with descriptive variable names
 
 #Rename column name from Activity_ID to Activity_Name
@@ -125,10 +102,6 @@ colnames(train)[3] <- "Activity_Name"
 meltedTest <- melt(test, id=c("Test_Subject_Seq","Subject_ID"))
 meltedTrain <- melt(train, id=c("Train_Subject_Seq","Subject_ID"))
 
-head(meltedTest)
-head(meltedTrain)
- 
-
 # Requirement 1: Merge the training and the test sets to create one data set.
 
 # Merge the two melted data sets into one using rbind. 
@@ -137,12 +110,9 @@ colnames(meltedTrain)[1] <- "Subject_Seq"
 colnames(meltedTest)[1] <- "Subject_Seq"
 mergedData <- rbind(meltedTrain, meltedTest)
 
-
 # Cast the data into a more user-friendly format.
 tidyData <- dcast(mergedData, Subject_ID + Subject_Seq ~ variable, 
                   value.var="value")
-
-head(tidyData)
 
 # Requirement 5: From the data set in step 4, creates a second, 
 # independent tidy data set with the average of each variable for each activity 
@@ -151,9 +121,6 @@ head(tidyData)
 # Melt the train and test data based on Subject ID and Activity_Name.
 meltedTrain <- melt(train[,!(names(train)=="Train_Subject_Seq")], id=c("Subject_ID","Activity_Name"))
 meltedTest <- melt(test[,!(names(test) =="Test_Subject_Seq")], id=c("Subject_ID","Activity_Name"))
-
-head(meltedTest)
-head(meltedTrain)
 
 # Merge the two melted data sets into one using rbind.
 mergedData <- rbind(meltedTrain, meltedTest)
