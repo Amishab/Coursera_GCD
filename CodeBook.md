@@ -4,21 +4,6 @@ author: "Amisha Bhanage"
 date: "Saturday, May 23, 2015"
 output: html_document
 ---
-
-
-```{r}
-summary(cars)
-```
-
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
 ## Code Book: Getting and Cleaning Data Course Project 
 
 ### The original data set
@@ -39,14 +24,6 @@ The Original data set also came with master data for Activities (activity_labels
 
 The first step was reading data from all the files provided and attaching libraries needed for the code. Then renamed column names for all data loaded in R data frames.
 
-```{r}
-source("run_analysis.R"")
-head(features)
-head(activities)
-head(test_subj)
-
-```
-
 Added a column to subject data frames viz. Train_Subject_Seq and Test_Subject_Seq that assigns sequence number to trials for each participant. This is needed to recast the tables during merge. Transformation for the columns are as under: 
 ```{r evaluate=F}
 train_subj_seq <- apply(table(train_subj), 1,function(x) seq(1,x,by=1))
@@ -55,10 +32,37 @@ train_subj <- cbind(Train_Subject_Seq=as.vector(unlist(train_subj_seq)), train_s
 test_subj_seq <- apply(table(test_subj), 1,function(x) seq(1,x,by=1))
 test_subj <- cbind(Test_Subject_Seq=as.vector(unlist(test_subj_seq)),test_subj)
 ```
-The first step of the preprocessing is to merge the training and test sets. Two sets combined, there are 10,299 instances where each instance contains 561 features (560 measurements and subject identifier). After the merge operation the resulting data, the table contains 562 columns (560 measurements, subject identifier and activity label).
+Added column names for X data set using feature names from feature.
 
-After the merge operation, mean and standard deviation features are extracted for further processing. Out of 560 measurement features, 33 mean and 33 standard deviations features are extracted, yielding a data frame with 68 features (additional two features are subject identifier and activity label).
+Next, filter data which has measurements on the mean and standard deviation. 33 mean and 33 standard deviations features are extracted, yielding a data frame with 69 variables (additional three variables are subject identifier, activity label and 
+additinal column added for Subject Sequence.
+```{r evaluate=F}
+# Determine the indices of mean() and std() entries.
+featind <- which(grepl("mean\\(\\)",features$Feature_Name) | grepl("std\\(\\)", features$Feature_Name))
 
+# create a table containing all test data containing only 
+# the measurements on the mean and standard deviation for each measurement
+test <- cbind(test_subj, ytest, xtest[,featind])
+
+# create a table containing all train data containing only 
+# the measurements on the mean and standard deviation for each measurement
+train <- cbind(train_subj, ytrain, xtrain[,featind])
+```
 Next, the activity labels are replaced with descriptive activity names, defined in activity_labels.txt in the original data folder.
+```{r evaluate=F}
+# Replace activity IDs with activity names
+for (i in activities$Activity_ID){
+  test$Activity_ID[which(test$Activity_ID == i)] <- activities$Activity_Name[i]
+  train$Activity_ID[which(train$Activity_ID == i)] <- activities$Activity_Name[i]
+  print(i)
+  print(activities$Activity_Name[i])
+}
+```
+Then melted the train and test data based on Subject ID and subject sequence number
+```{r evaluate=F}
+meltedTest <- melt(test, id=c("Test_Subject_Seq","Subject_ID"))
+meltedTrain <- melt(train, id=c("Train_Subject_Seq","Subject_ID"))
+```
+Then merged the two melted data frames using rbind. dcast the merged data gives the final tidy data (10299 obs. of 69 variables) which is written to the pipe-delimited text file named `GCD_Project_tidy_data.txt`
 
-The final step creates a tidy data set with the average of each variable for each activity and each subject. 10299 instances are split into 180 groups (30 subjects and 6 activities) and 66 mean and standard deviation features are averaged for each group. The resulting data table has 180 rows and 66 columns. The tidy data set is exported to UCI_HAR_tidy.csv where the first row is the header containing the names for each column.
+The final step creates a tidy data set calculating mean of each variable for each activity and each subject. 10299 observations from tidy data set are split into 180 groups (30 subjects and 6 activities) and 66 mean and standard deviation features are averaged for each group. We dropped the column subject sequence created for merging data. The resulting data table has 180 rows and 68 columns. The tidy data set is exported to pipe-delimited text file named `GCD_Project_tidy_data_means.txt` where the first row is the header containing the names for each column.
