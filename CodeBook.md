@@ -35,7 +35,7 @@ test_subj <- cbind(Test_Subject_Seq=as.vector(unlist(test_subj_seq)),test_subj)
 Added column names for X data set using feature names from feature.
 
 Next, filter data which has measurements on the mean and standard deviation. 33 mean and 33 standard deviations features are extracted, yielding a data frame with 69 variables (additional three variables are subject identifier, activity label and 
-additinal column added for Subject Sequence.
+additional column added for Subject Sequence.
 ```{r evaluate=F}
 # Determine the indices of mean() and std() entries.
 featind <- which(grepl("mean\\(\\)",features$Feature_Name) | grepl("std\\(\\)", features$Feature_Name))
@@ -63,6 +63,6 @@ Then melted the train and test data based on Subject ID and subject sequence num
 meltedTest <- melt(test, id=c("Test_Subject_Seq","Subject_ID"))
 meltedTrain <- melt(train, id=c("Train_Subject_Seq","Subject_ID"))
 ```
-Then merged the two melted data frames using rbind. dcast the merged data gives the final tidy data (10299 obs. of 69 variables) which is written to the pipe-delimited text file named `GCD_Project_tidy_data.txt`
+Then merged the two melted data frames using rbind. Used dcast on the merged data to derive the tidy data (10299 obs. of 69 variables) which is written to the pipe-delimited text file named `GCD_Project_tidy_data.txt`
 
 The final step creates a tidy data set calculating mean of each variable for each activity and each subject. 10299 observations from tidy data set are split into 180 groups (30 subjects and 6 activities) and 66 mean and standard deviation features are averaged for each group. We dropped the column subject sequence created for merging data. The resulting data table has 180 rows and 68 columns. The tidy data set is exported to pipe-delimited text file named `GCD_Project_tidy_data_means.txt` where the first row is the header containing the names for each column.
