@@ -98,7 +98,7 @@ colnames(train)[3] <- "Activity_Name"
 # Recast train and test need to be recast for merging (otherwise there it leads into
 # inelegant column duplicates with NA values.)
 
-# Melt the train and test data based on Subject ID and subject trial count.
+# Melt the train and test data based on Subject ID and subject sequence number.
 meltedTest <- melt(test, id=c("Test_Subject_Seq","Subject_ID"))
 meltedTrain <- melt(train, id=c("Train_Subject_Seq","Subject_ID"))
 
